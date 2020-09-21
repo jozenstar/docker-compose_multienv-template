@@ -1,0 +1,55 @@
+version: "3.5"
+services:
+    nginx:
+        image: nginx
+        hostname: nginx
+        restart: "always"
+        volumes:
+            - "./nginx/conf.d:/etc/nginx/conf.d"
+            - "./nginx/ssl:/etc/nginx/ssl"
+            - "./nginx/logs:/var/log/nginx"
+            - "web-content_qa1:/var/www/web_qa1"
+            - "web-content_qa2:/var/www/web_qa2"
+            - "web-content_qa3:/var/www/web_qa3"
+            - "web-content_qa4:/var/www/web_qa4"
+            - "web-content_qa5:/var/www/web_qa5"
+            - "web-content_qa6:/var/www/web_qa6"
+
+        ports:
+            - "80:80"
+            - "443:443"
+            - "15672:15672"
+        networks:
+            - qa1
+            - qa2
+            - qa3
+            - qa4
+            - qa5
+            - qa6
+networks:
+    qa1:
+        external: true
+    qa2:
+        external: true
+    qa3:
+        external: true
+    qa4:
+        external: true
+    qa5:
+        external: true
+    qa6:
+        external: true
+
+volumes:
+    web-content_qa1:
+            external: true
+    web-content_qa2:
+            external: true
+    web-content_qa3:
+            external: true
+    web-content_qa4:
+            external: true
+    web-content_qa5:
+            external: true
+    web-content_qa6:
+            external: true

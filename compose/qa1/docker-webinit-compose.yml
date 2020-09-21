@@ -1,0 +1,15 @@
+version: "3.5"
+services:
+    webinit:
+        container_name: "webinit_${ENV}"
+        image: image.name.com/web:${ENV}
+        volumes:
+            - web-content:/var/www/content
+            - "/home/developer/compose/${ENV}/webinit.sh:/docker-entrypoint.sh"
+        command: bash /docker-entrypoint.sh
+
+volumes:
+    web-content:
+        name: "web-content_${ENV}"
+        external: true
+

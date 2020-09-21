@@ -1,0 +1,98 @@
+version: "3.5"
+services:
+    web:
+        container_name: "web_${ENV}"
+        image: image.name.com/web:${ENV}
+        expose:
+            - "9000"
+        networks:
+            - qa
+        volumes:
+            - web-content:/var/www/web
+    api:
+        container_name: "api_${ENV}"
+        image: image.name.com/api:${ENV}
+        expose:
+            - "9000"
+        networks:
+            - qa
+    pgdb:
+        container_name: "pgdb_${ENV}"
+        expose:
+            - "5432"
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        restart: always
+        environment:
+              POSTGRES_PASSWORD: password
+              POSTGRES_USER: postgres
+              POSTGRES_DB: "DB_${ENV}"
+              PGDATA: /data/pgdata
+              ENV: "${ENV}"
+        image: postgres:9.4
+
+        volumes:
+            - "/home/developer/compose/${ENV}/pgdb:/data/pgdata"
+            - "/home/developer/compose/${ENV}/pgrestore.sh:/docker-entrypoint-initdb.d/pgrestore.sh"
+            - "/home/developer/compose/${ENV}/pgdump_${ENV}.sql:/data/pgdump.sql"
+        networks:
+            - qa
+    wss:
+        container_name: "wss_${ENV}"
+        image: image.name.com/web:${ENV}
+        expose:
+            - "9912"
+            - "5560"
+        networks:
+            - qa
+        depends_on:
+            - web
+        volumes:
+            - web-content:/var/www/web
+        command: "php bin/console core:socket:server"
+
+    rmq:
+        container_name: "rmq_${ENV}"
+        hostname: "rmq"
+        image: rabbitmq:3-management
+        expose:
+            - "5672"
+            - "55672"
+        networks:
+            - qa
+    
+    mongo:
+        container_name: "mongo_${ENV}"
+        image: mongo:3.4
+        command: --auth
+        expose:
+            - "27017"
+        ports:
+            - "${MONGO_PORT}:27017"
+        environment:
+            - AUTH=yes
+            - MONGODB_ADMIN_USER=mongoadmin
+            - MONGODB_ADMIN_PASS=password
+            - 'MONGO_INITDB_DATABASE:"CFW_${ENV}"'
+            - 'ENV:"${ENV}"'
+        volumes:
+            - "/home/developer/compose/${ENV}/mongo:/data/db"
+            - "/home/developer/compose/${ENV}/dump:/docker-entrypoint-initdb.d/dump"
+            - "/home/developer/compose/${ENV}/mongorestore.sh:/docker-entrypoint-initdb.d/mongorestore.sh"
+        networks:
+            - qa
+
+    memcached:
+        container_name: "memcache_${ENV}"
+        image: memcached:1.5.12
+        expose:
+            - "11211"
+        networks:
+            - qa
+
+networks:
+    qa:
+        name: "${ENV}"
+volumes:
+    web-content:
+            name: "web-content_${ENV}"
